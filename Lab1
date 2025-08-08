@@ -1,0 +1,47 @@
+import requests
+import csv
+import pandas as pd
+
+
+
+def collect_data_from_remoteOk():
+    api_url = ("https://remoteok.com/api")
+    headers = {"User-Agent" : "Mozilla/5.0"}
+
+    response=requests.get(api_url,headers=headers)
+
+    if response.status_code==200:
+        data=response.json()
+
+        job_testing=data[1:]
+        
+        all_companies_data = []
+
+        for jobs in job_testing:
+
+            company=jobs.get("company", "N/A")
+            role=jobs.get("role", "N/A")
+            location=jobs.get("location", "Remote")
+            tag_string=", ".join(jobs.get("tags", []))
+            
+            job_info={
+                "Company Name" : company,
+                "Job Role" : role,
+                "Location" : location,
+                "Tags" : tag_string
+            }
+
+            all_companies_data.append(job_info)
+
+        df=pd.DataFrame(all_companies_data)
+
+        df.to_csv("remoteok_jobs_data.csv",index=False)
+        print("Job data saved to 'remoteok_jobs_data.csv'")
+        print(df.head())
+
+    else:
+        print("Failed to retrieve data. Status code: ",response.status_code)
+
+
+collect_data_from_remoteOk()
+    
